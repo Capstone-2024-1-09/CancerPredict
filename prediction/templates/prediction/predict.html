@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>암 발병 예측</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            background-color: #f7f7f7;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 10px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+    </style>
+    <script>
+        function calculateAndSubmit() {
+            // 키(m)와 몸무게(kg)를 가져옴
+            var height = parseFloat(document.getElementById("height").value);
+            var weight = parseFloat(document.getElementById("weight").value);
+
+            if (height > 0 && weight > 0) {
+                // BMI 계산
+                var bmi = weight / (height * height);
+                // 계산된 BMI를 hidden input에 저장
+                document.getElementById("bmi").value = bmi.toFixed(2);
+                // 폼을 제출
+                document.getElementById("predict-form").submit();
+            } else {
+                alert("키와 몸무게를 올바르게 입력해주세요.");
+            }
+        }
+    </script>
+</head>
+<body>
+
+<div class="container">
+    <h3>특성 입력란</h3>
+    <form id="predict-form" method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="Age">나이</label>
+            <input type="number" name="Age" id="Age" required>
+        </div>
+        <div class="form-group">
+            <label for="Gender">성별</label>
+            <select name="Gender" id="Gender" required>
+                <option value="1">여성</option>
+                <option value="0">남성</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="height">키 (m)</label>
+            <input type="number" step="0.01" name="height" id="height" placeholder="예: 1.75" required>
+        </div>
+        <div class="form-group">
+            <label for="weight">몸무게 (kg)</label>
+            <input type="number" step="0.1" name="weight" id="weight" placeholder="예: 70" required>
+        </div>
+        <!-- BMI 값을 저장하는 hidden 필드 -->
+        <input type="hidden" name="BMI" id="bmi">
+
+        <div class="form-group">
+            <label for="Smoking">흡연 여부</label>
+            <select name="Smoking" id="Smoking" required>
+                <option value="1">예</option>
+                <option value="0">아니요</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="PhysicalActivity">일주일 간 활동량</label>
+            <input type="number" step="0.1" name="PhysicalActivity" id="PhysicalActivity" required>
+        </div>
+        <div class="form-group">
+            <label for="AlcoholIntake">일주일 간 알코올 섭취 유닛</label>
+            <input type="number" step="0.1" name="AlcoholIntake" id="AlcoholIntake" required>
+        </div>
+        <div class="form-group">
+            <label for="CancerHistory">암 발병 경험</label>
+            <select name="CancerHistory" id="CancerHistory" required>
+                <option value="1">예</option>
+                <option value="0">아니요</option>
+            </select>
+        </div>
+        <button type="button" onclick="calculateAndSubmit()">암 발병 예측</button>
+    </form>
+</div>
+
+</body>
+</html>
