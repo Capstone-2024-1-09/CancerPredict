@@ -50,8 +50,12 @@ shap_mean_abs_df = pd.DataFrame({
 
 # SHAP 값의 평균 임팩트를 큰 순서대로 정렬하여 출력
 shap_mean_abs_df_sorted = shap_mean_abs_df.sort_values(by='Mean_SHAP_Value', ascending=False)
+shap_mean_abs_df_final = shap_mean_abs_df_sorted.set_index('Feature')
 
-print(shap_mean_abs_df_sorted)
+
+#for i in range(0,shap_mean_abs_df_sorted.shape[0]):
+    #print(shap_mean_abs_df_sorted.iloc[i,0])
+
 
 def preprocess_input(age, gender, bmi, smoking, physical_activity, alcohol_intake, cancer_history):
     
@@ -117,7 +121,42 @@ def predict_cancer(request):
         shap_mean_abs_input_df_sorted = shap_mean_abs_input_df.sort_values(by='Mean_SHAP_Value', ascending=False)
         # index를 feature로 변경
         shap_mean_abs_input_df_final = shap_mean_abs_input_df_sorted.set_index('Feature')
+        
 
+        shap_diff = []
+        shap_diff_information = ['Age Diff', 'Gender Diff', 'BMI Diff', 'Smoking Diff', 'PhysicalActivity Diff', 'AlcoholIntake Diff', 'CancerHistory Diff']
+        
+        
+        
+
+        print(shap_mean_abs_df_sorted)
+        print(shap_mean_abs_input_df_sorted)
+
+
+        for i in range(0,len(columns)):
+            shap_diff.append(shap_mean_abs_input_df_final.loc[columns[i],'Mean_SHAP_Value']-shap_mean_abs_df_final.loc[columns[0],'Mean_SHAP_Value'])
+        
+        shap_diff_df = pd.DataFrame({
+            'Feature': columns,
+            'Shap_Diff': shap_diff,
+            'Shap_Diff_Information': shap_diff_information
+        })
+
+        shap_diff_df_sorted = shap_diff_df.sort_values(by='Shap_Diff', ascending=False)
+
+        print(shap_diff_df_sorted)
+
+        
+
+
+        #for i in range(0,shap_mean_abs_df_sorted.shape[0]):
+            #input_features.append(shap_mean_abs_df_sorted.iloc[i,0])
+
+        #print(input_features)
+        #print(input_shap_diff)
+        
+            
+        
         return render(request, 'prediction/result.html', {'result': result})
 
     return render(request, 'prediction/predict.html')
