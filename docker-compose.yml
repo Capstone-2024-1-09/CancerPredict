@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  web:
+    build: .
+    command: gunicorn --bind 0.0.0.0:8000 Capstone.wsgi:application
+    volumes:
+      - .:/app
+    expose:
+      - "8000"
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - .:/app
+    depends_on:
+      - web
