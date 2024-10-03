@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>암 발병 예측 결과</title>
-    <!-- Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
@@ -13,6 +12,22 @@
             <div class="card-body">
                 <h1 class="card-title text-center">암 발병 예측 결과</h1>
                 <p class="card-text text-center">결과: <strong>{{ result }}</strong></p>
+
+                <!-- SHAP 모델 결과 출력 -->
+                <h3 class="mt-4">SHAP 값 분석 결과</h3>
+                <ul>
+                    <li>가장 큰 영향을 미친 특성: <strong>{{ most_influential_feature }}</strong></li>
+                    <li>{{ explanation }}</li>
+                </ul>
+
+                <!-- SHAP 값과 사용자 입력값 차이 출력 -->
+                <h4 class="mt-4">SHAP 값과 입력값 차이</h4>
+                <ul>
+                    {% for diff in shap_diff %}
+                        <li>{{ diff }}</li>
+                    {% endfor %}
+                </ul>
+
                 <div class="text-center mt-4">
                     <a href="{% url 'predict' %}" class="btn btn-primary">다시 예측하기</a>
                 </div>
@@ -20,7 +35,6 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
