@@ -160,3 +160,9 @@ def predict_cancer(request):
         return render(request, 'prediction/result.html', {'result': result})
 
     return render(request, 'prediction/predict.html')
+def index(request):
+    return render(request, 'prediction/index.html')
+def result(request):
+    return render(request, 'prediction/result.html')
+def about(request):
+    return render(request, 'prediction/about.html')
