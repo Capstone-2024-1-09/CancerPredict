@@ -17,7 +17,7 @@ HIDDEN_DIM = 128
 OUTPUT_DIM = 2  # 이진 분류 (암 진단 여부)
 
 model = SAINT(INPUT_DIM, HIDDEN_DIM, OUTPUT_DIM)
-state_dict = torch.load(MODEL_PATH, map_location=torch.device('cpu'), weights_only=True)
+state_dict = torch.load(MODEL_PATH, map_location=torch.device('cuda'), weights_only=True)
 model.load_state_dict(state_dict)
 model.eval()
 
