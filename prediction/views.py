@@ -40,7 +40,7 @@ Y_train_tensor = torch.tensor(Y_train, dtype=torch.float32).unsqueeze(1)
 @lru_cache(maxsize=1)
 def get_explainer():
     try:
-        return shap.GradientExplainer(model, X_train_tensor)
+        return shap.GradientExplainer(SAINT(INPUT_DIM, HIDDEN_DIM, 1), X_train_tensor).shap_values(X_train_tensor)
     except Exception as e:
         logger.error(f"SHAP Explainer 초기화 실패: {e}")
         return None
