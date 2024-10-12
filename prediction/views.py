@@ -7,6 +7,11 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import shap
+from functools import lru_cache
+import logging
+
+# 로그 설정
+logger = logging.getLogger(__name__)
 
 # 모델 초기화 및 로드 (서버 시작 시 한 번만 로드)
 MODEL_PATH = os.path.join(settings.BASE_DIR, 'prediction', 'models_files', 'saint_model.pth')
@@ -31,27 +36,14 @@ X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_
 X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
 Y_train_tensor = torch.tensor(Y_train, dtype=torch.float32).unsqueeze(1)
 
-# explainer 선언
-explainer = shap.GradientExplainer(SAINT(INPUT_DIM, HIDDEN_DIM, 1), X_train_tensor)
-shap_values_train = explainer.shap_values(X_train_tensor)
-
-# column features 선언
-columns = ['Age', 'Gender', 'BMI', 'Smoking', 'PhysicalActivity', 'AlcoholIntake', 'CancerHistory']
-
-# shap_values_train의 shape이 (샘플 수, feature 수, 1)이므로, 이를 2차원으로 변환
-shap_values_train_2d = np.squeeze(shap_values_train)  # 차원 축소
-shap_mean_abs_values = np.abs(shap_values_train_2d).mean(axis=0) # shap 값 담기
-
-# Feature별 평균 임팩트 값을 DataFrame으로 변환
-shap_mean_abs_df = pd.DataFrame({
-    'Feature': columns,
-    'Mean_SHAP_Value': shap_mean_abs_values
-})
-
-# SHAP 값의 평균 임팩트를 큰 순서대로 정렬하여 출력
-shap_mean_abs_df_sorted = shap_mean_abs_df.sort_values(by='Mean_SHAP_Value', ascending=False)
-shap_mean_abs_df_final = shap_mean_abs_df_sorted.set_index('Feature')
-
+# SHAP Explainer
+@lru_cache(maxsize=1)
+def get_explainer():
+    try:
+        return shap.GradientExplainer(model, X_train_tensor)
+    except Exception as e:
+        logger.error(f"SHAP Explainer 초기화 실패: {e}")
+        return None
 
 #for i in range(0,shap_mean_abs_df_sorted.shape[0]):
     #print(shap_mean_abs_df_sorted.iloc[i,0])
@@ -101,27 +93,54 @@ def predict_cancer(request):
         input_tensor = input_tensor.unsqueeze(0)
 
         # 모델 예측 수행
-        with torch.no_grad():
-            output = model(input_tensor)
-            probabilities = torch.softmax(output, dim=1)
-            cancer_probability = probabilities[0][1].item()  # 클래스 1(암이 있을 확률)
+        try:
+            with torch.no_grad():
+                output = model(input_tensor)
+                probabilities = torch.softmax(output, dim=1)
+                cancer_probability = probabilities[0][1].item()  # 클래스 1(암이 있을 확률)
+        except Exception as e:
+            logger.error(f"모델 예측 실패: {e}")
+            return render(request, 'predict.html', {'error': '모델 예측 중 오류가 발생했습니다.'})
 
-        # 암이 있을 확률만 출력
-        result = f"암 발병 확률: {cancer_probability * 100:.2f}%"
-        # 입력값 explainer에 학습
-        shap_values_input = explainer.shap_values(input_tensor)
-        shap_values_input_2d = shap_values_input.squeeze(2) # 차원 축소
-        shap_mean_abs_input_values = np.abs(shap_values_input_2d).mean(axis=0)
+        explainer = get_explainer()
+        if explainer is None:
+            return render(request, 'predict.html', {'error': 'SHAP Explainer 초기화에 실패했습니다.'})
 
-        # Feature별 평균 임팩트 값을 DataFrame으로 변환
+        try:
+            shap_values_input = explainer.shap_values(input_tensor)
+            shap_values_input_2d = shap_values_input.squeeze(2)  # 차원 축소
+            shap_mean_abs_input_values = np.abs(shap_values_input_2d).mean(axis=0)
+        except Exception as e:
+            logger.error(f"SHAP 계산 실패: {e}")
+            return render(request, 'predict.html', {'error': 'SHAP 계산 중 오류가 발생했습니다.'})
+
+        columns = ['Age', 'Gender', 'BMI', 'Smoking', 'PhysicalActivity', 'AlcoholIntake', 'CancerHistory']
         shap_mean_abs_input_df = pd.DataFrame({
             'Feature': columns,
             'Mean_SHAP_Value': shap_mean_abs_input_values
         })
         shap_mean_abs_input_df_sorted = shap_mean_abs_input_df.sort_values(by='Mean_SHAP_Value', ascending=False)
-        # index를 feature로 변경
         shap_mean_abs_input_df_final = shap_mean_abs_input_df_sorted.set_index('Feature')
-        
+
+        # 기존 SHAP 평균 값 로드
+        try:
+            shap_values_train = explainer.shap_values(X_train_tensor)
+            shap_values_train_2d = shap_values_train.squeeze(2)
+            shap_mean_abs_values = np.abs(shap_values_train_2d).mean(axis=0)
+
+            shap_mean_abs_df = pd.DataFrame({
+                'Feature': columns,
+                'Mean_SHAP_Value': shap_mean_abs_values
+            })
+            shap_mean_abs_df_sorted = shap_mean_abs_df.sort_values(by='Mean_SHAP_Value', ascending=False)
+            shap_mean_abs_df_final = shap_mean_abs_df_sorted.set_index('Feature')
+        except Exception as e:
+            logger.error(f"기존 SHAP 평균 값 로드 실패: {e}")
+            return render(request, 'predict.html', {'error': 'SHAP 데이터 로드 중 오류가 발생했습니다.'})
+
+
+        # 암이 있을 확률만 출력
+        predictResult = f"암 발병 확률: {cancer_probability * 100:.2f}%"
 
         shap_diff = []
         shap_diff_information = ['Age Diff', 'Gender Diff', 'BMI Diff', 'Smoking Diff', 'PhysicalActivity Diff', 'AlcoholIntake Diff', 'CancerHistory Diff']
@@ -146,7 +165,7 @@ def predict_cancer(request):
 
         print(shap_diff_df_sorted)
 
-        
+
 
 
         #for i in range(0,shap_mean_abs_df_sorted.shape[0]):
@@ -157,7 +176,7 @@ def predict_cancer(request):
         
             
         
-        return render(request, 'result.html', {'result': result})
+        return render(request, 'result.html', {'result': predictResult})
 
     return render(request, 'predict.html')
 def index(request):
