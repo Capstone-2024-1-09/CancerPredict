@@ -40,7 +40,7 @@ Y_train_tensor = torch.tensor(Y_train, dtype=torch.float32).unsqueeze(1)
 @lru_cache(maxsize=1)
 def get_explainer():
     try:
-        return shap.GradientExplainer(SAINT(INPUT_DIM, HIDDEN_DIM, 1), X_train_tensor).shap_values(X_train_tensor)
+        return shap.GradientExplainer(SAINT(INPUT_DIM, HIDDEN_DIM, 1), X_train_tensor)
     except Exception as e:
         logger.error(f"SHAP Explainer 초기화 실패: {e}")
         return None
@@ -102,6 +102,7 @@ def predict_cancer(request):
             logger.error(f"모델 예측 실패: {e}")
             return render(request, 'predict.html', {'error': '모델 예측 중 오류가 발생했습니다.'})
 
+        # 입력값을 explanier에 학습
         explainer = get_explainer()
         if explainer is None:
             return render(request, 'predict.html', {'error': 'SHAP Explainer 초기화에 실패했습니다.'})
@@ -125,7 +126,7 @@ def predict_cancer(request):
         # 기존 SHAP 평균 값 로드
         try:
             shap_values_train = explainer.shap_values(X_train_tensor)
-            shap_values_train_2d = shap_values_train.squeeze(2)
+            shap_values_train_2d = np.squeeze(shap_values_train)
             shap_mean_abs_values = np.abs(shap_values_train_2d).mean(axis=0)
 
             shap_mean_abs_df = pd.DataFrame({
