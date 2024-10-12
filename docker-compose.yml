@@ -2,9 +2,10 @@ services:
   web:
     build: .
     container_name: cancer-prediction-web
-    command: gunicorn Capstone.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn Capstone.wsgi:application --bind 0.0.0.0:8000 --workers 3
     volumes:
       - .:/app
+      - static_volume:/app/static
     expose:
       - "8000"
     networks:
@@ -15,6 +16,7 @@ services:
     container_name: cancer-prediction-nginx
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - static_volume:/app/static
