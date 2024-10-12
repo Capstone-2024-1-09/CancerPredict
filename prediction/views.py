@@ -88,14 +88,14 @@ def predict_cancer(request):
 
         # 입력값 유효성 검사
         if not age or not gender or not bmi or not smoking or not physical_activity or not alcohol_intake or not cancer_history:
-            return render(request, 'prediction/predict.html', {'error': '모든 필드를 입력해주세요.'})
+            return render(request, 'predict.html', {'error': '모든 필드를 입력해주세요.'})
 
         # 입력값 전처리
         try:
             input_tensor = preprocess_input(age, gender, bmi, smoking, physical_activity, alcohol_intake,
                                             cancer_history)
         except ValueError:
-            return render(request, 'prediction/predict.html', {'error': '잘못된 입력 형식입니다.'})
+            return render(request, 'predict.html', {'error': '잘못된 입력 형식입니다.'})
 
         # 배치 차원 추가 (1개의 샘플을 예측하므로)
         input_tensor = input_tensor.unsqueeze(0)
@@ -157,12 +157,12 @@ def predict_cancer(request):
         
             
         
-        return render(request, 'prediction/result.html', {'result': result})
+        return render(request, 'result.html', {'result': result})
 
-    return render(request, 'prediction/predict.html')
+    return render(request, 'predict.html')
 def index(request):
-    return render(request, 'prediction/index.html')
+    return render(request, 'index.html')
 def result(request):
-    return render(request, 'prediction/result.html')
+    return render(request, 'result.html')
 def about(request):
-    return render(request, 'prediction/about.html')
+    return render(request, 'about.html')
