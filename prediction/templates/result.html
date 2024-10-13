@@ -10,17 +10,18 @@
             <p class="card-text text-center">결과: <strong>{{ result }}</strong></p>
 
             <!-- SHAP 모델 결과 출력 -->
-            <h3 class="mt-4">SHAP 값 분석 결과</h3>
+            <h3 class="mt-4">사용자 SHAP 값 분석 결과</h3>
             <ul>
-                <li>가장 큰 영향을 미친 특성: <strong>{{ most_influential_feature }}</strong></li>
-                <li>{{ explanation }}</li>
+                <li>가장 큰 영향을 미친 특성: <strong>{{ cause }}</strong></li>
+                <li>{{ solution }}</li>
             </ul>
 
             <!-- SHAP 값과 사용자 입력값 차이 출력 -->
-            <h4 class="mt-4">SHAP 값과 입력값 차이</h4>
-            <ul>
-                {% for diff in shap_diff %}
-                    <li>{{ diff }}</li>
+            <h4 class="mt-4">암 발병의 주요 원인 순위</h4>
+            <h7 class="mt-4">SHAP 값이 클수록 암 발병에 큰 영향을 미치는 원인</h7>
+            <ol type = "1">
+                {% for features in rank_features %}
+                    <li>{{ features }}</li>
                 {% endfor %}
             </ul>
 
