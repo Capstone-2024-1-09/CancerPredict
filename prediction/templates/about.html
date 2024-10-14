@@ -20,12 +20,19 @@
             <div class="text-center">
             <h2 class="mt-5">ROC 커브</h2>
             <img src="{% static 'ROC.png' %}" alt="ROC 커브" class="img-fluid">
-            <p>ROC 커브는 모델의 성능을 평가하는 지표입니다. 아래 그래프에서 True Positive Rate와 False Positive Rate 사이의 관계를 확인할 수 있으며, AUC 값이 높을수록 성능이 우수합니다.</p>
+            <p>ROC 커브는 모델의 성능을 평가하는 지표입니다. 아래 그래프에서 True Positive Rate와 False Positive Rate 사이의 관계를 확인할 수 있으며, ROC 커브 밑 부분의 값이 클 수록 성능이 우수합니다.</p>
         </div>
         <div class="text-center">
-            <h2 class="mt-5">SHAP Value Bar 그래프</h2>
+            <h2 class="mt-5">SHAP</h2>
             <img src="{% static 'SHAP_bar.png' %}" alt="SHAP Value Bar 그래프" class="img-fluid">
-            <p>SHAP Value Bar 그래프는 각 특성들이 학습 모델의 예측 결과에 미치는 영향을 시각화한 그래프입니다.</p>
+            <p>
+                <strong>SHAP (SHapley Additive exPlanations)</strong>는 모델이 내린 예측 결과에 대해 각 입력 특성이 기여한 정도를 설명하는 방법론입니다.
+                SHAP은 게임 이론에서 유래한 Shapley 값을 활용하여 각 특성이 예측에 미친 기여도를 계산합니다.
+            </p>
+            <p>
+                위의 그래프는 사용자 입력 데이터를 기반으로 SHAP 값을 계산한 막대 그래프로, 각 특성이 예측 결과에 미친 기여도를 내림차순으로 나타내고 있습니다.
+                예를 들어, '흡연' 특성이 가장 큰 영향을 미쳤다면, 해당 사용자의 흡연 여부가 암 발병 확률 예측에 크게 기여했음을 나타냅니다.
+            </p>
         </div>
     </div>
 {% endblock %}

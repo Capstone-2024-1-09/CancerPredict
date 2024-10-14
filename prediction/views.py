@@ -55,10 +55,6 @@ shap_mean_abs_df = pd.DataFrame({
 shap_mean_abs_df = shap_mean_abs_df[shap_mean_abs_df['Feature'] != 'Gender']
 shap_mean_abs_df_sorted = shap_mean_abs_df.sort_values(by='Mean_SHAP_Value', ascending=False)
 
-# 컨텍스트 리스트 생성
-context_feature_rank = shap_mean_abs_df_sorted['Rank'].tolist()
-context_feature_shap = shap_mean_abs_df_sorted['Mean_SHAP_Value'].tolist()
-
 def preprocess_input(age, gender, bmi, smoking, physical_activity, alcohol_intake, cancer_history):
     try:
         features = [
@@ -109,8 +105,7 @@ def predict_cancer(request):
         # 초기 컨텍스트 준비
         context = {
             'result': result,
-            'rank_features': context_feature_rank,
-            'rank_shap': context_feature_shap,
+            'rank_features': rank_name
         }
 
         # 암 발병 확률이 20% 이상일 때만 SHAP 값을 계산하고, 그래프를 포함
@@ -119,6 +114,7 @@ def predict_cancer(request):
             shap_values_input = explainer.shap_values(input_tensor)
             shap_values_input_2d = shap_values_input[:, :, 1]
             shap_mean_abs_input_values = np.abs(shap_values_input_2d).mean(axis=0)
+
 
             shap_information = [
                 '나이 - 병원에서 정기적으로 검진 받기 , 40대 이상: 위암, 대장암, 간암, 폐암 등의 검진을 주기적으로 받아야 합니다., 50대 이상: 특히 대장암, 전립선암, 폐암 검진의 필요성이 높습니다. 고위험군은 전문가와 상의하여 개인화된 검진 일정을 따르는 것이 좋습니다.',
@@ -136,16 +132,18 @@ def predict_cancer(request):
                 'Mean_SHAP_Value': shap_mean_abs_input_values,
                 'information': shap_information
             })
+
             shap_mean_abs_input_df = shap_mean_abs_input_df[shap_mean_abs_input_df['Feature'] != 'Gender']
             shap_mean_abs_input_df_sorted = shap_mean_abs_input_df.sort_values(by='Mean_SHAP_Value', ascending=False)
 
-            # 원인과 해결법
-            main_causes = shap_mean_abs_input_df_sorted.iloc[0]['Feature']
-            solution = shap_mean_abs_input_df_sorted.iloc[0]['information']
+            # 사용자 입력값에 따른 SHAP값 그래프
+            plt.figure(figsize=(8, 6))
+            plt.barh(shap_mean_abs_input_df_sorted['Feature'], shap_mean_abs_input_df_sorted['Mean_SHAP_Value'],
+                     color='lightblue')
+            plt.xlabel('SHAP Value (Mean Absolute)')
+            plt.title('SHAP value')
+            plt.tight_layout()
 
-            # SHAP 요약 플롯 생성
-            plt.figure()
-            shap.summary_plot(shap_values_train_2d, X_train, feature_names=columns, show=False)
             buffer = BytesIO()
             plt.savefig(buffer, format='png')
             buffer.seek(0)
@@ -154,25 +152,14 @@ def predict_cancer(request):
             shap_plot = base64.b64encode(image_png).decode('utf-8')
             plt.close()
 
-            # SHAP 값에 사용자 입력값 추가
-            shap_values = shap_mean_abs_df_sorted.to_dict('records')
-            user_input = {
-                'Age': age,
-                'Gender': gender,
-                'BMI': bmi,
-                'Smoking': smoking,
-                'PhysicalActivity': physical_activity,
-                'AlcoholIntake': alcohol_intake,
-                'CancerHistory': cancer_history,
-            }
-            for feature in shap_values:
-                feature['value'] = user_input.get(feature['Feature'], '')
+            # 원인과 해결법
+            main_causes = shap_mean_abs_input_df_sorted.iloc[0]['Feature']
+            solution = shap_mean_abs_input_df_sorted.iloc[0]['information']
 
             # 컨텍스트에 SHAP 관련 데이터 추가
             context.update({
                 'cause': main_causes,
                 'solution': solution,
-                'shap_values': shap_values,
                 'shap_plot': shap_plot,
             })
         else:
