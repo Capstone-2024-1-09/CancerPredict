@@ -9,20 +9,46 @@
             <h1 class="card-title text-center">암 발병 예측 결과</h1>
             <p class="card-text text-center">결과: <strong>{{ result }}</strong></p>
 
-            <!-- SHAP 모델 결과 출력 -->
-            <h3 class="mt-4">SHAP 값 분석 결과</h3>
+            <!-- 사용자 입력값 분석 결과 -->
+            <h3 class="mt-4">사용자 입력값 분석 결과</h3>
             <ul>
-                <li>가장 큰 영향을 미친 특성: <strong>{{ most_influential_feature }}</strong></li>
-                <li>{{ explanation }}</li>
+                <li>가장 큰 영향을 미친 특성: <strong>{{ cause }}</strong></li>
+                <li>{{ solution }}</li>
             </ul>
 
-            <!-- SHAP 값과 사용자 입력값 차이 출력 -->
-            <h4 class="mt-4">SHAP 값과 입력값 차이</h4>
-            <ul>
-                {% for diff in shap_diff %}
-                    <li>{{ diff }}</li>
-                {% endfor %}
-            </ul>
+            <!-- 암 발병 확률이 20% 이상일 때만 SHAP 요약 플롯과 SHAP 값 테이블 표시 -->
+            {% if shap_plot %}
+                <!-- SHAP 요약 플롯 -->
+                <h3 class="mt-4">SHAP 요약 플롯</h3>
+                <img src="data:image/png;base64,{{ shap_plot }}" alt="SHAP Summary Plot" class="img-fluid">
+            {% endif %}
+
+            {% if shap_values %}
+                <!-- SHAP 값과 사용자 입력값 차이 출력 -->
+                <h4 class="mt-4">암 발병의 주요 원인 순위</h4>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>순위</th>
+                            <th>특성</th>
+                            <th>SHAP 값</th>
+                            <th>설명</th>
+                            <th>사용자 입력값</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for feature in shap_values %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ feature.Rank }}</td>
+                                <td>{{ feature.Mean_SHAP_Value|floatformat:4 }}</td>
+                                <td>{{ feature.information }}</td>
+                                <td>{{ feature.value }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
 
             <div class="text-center mt-4">
                 <a href="{% url 'predict' %}" class="btn btn-primary">다시 예측하기</a>

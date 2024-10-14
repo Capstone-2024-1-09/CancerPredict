@@ -3,13 +3,29 @@
 
 {% block title %}소개 | 암 발병 예측 서비스{% endblock %}
 
+{%  load static %}
+
 {% block content %}
     <div class="container">
         <h1>프로젝트 설명</h1>
-        <p>본 웹서비스는 암 발병 확률을 예측하기 위한 머신러닝 모델을 바탕으로 개발되었습니다.</p>
+        <p>본 웹서비스는 표 형식 데이터 딥러닝을 위한 프로젝트로 개발되었습니다.</p>
         <p>이 프로젝트는 사용자로부터 다양한 건강 관련 데이터를 입력받아, 암 발병 여부를 예측하는 딥러닝 모델을 통해 결과를 제공합니다. 입력된 데이터는 나이, 성별, 흡연 여부, 운동 시간, 음주량 등 다양한 건강 지표로 구성되어 있습니다.</p>
-        <p>본 프로젝트는 암 예방과 건강 증진에 기여하는 것을 목표로 하며, 예측 모델의 결과는 의사결정 지원을 위한 참고 자료로 제공됩니다.</p>
-        <p>보다 정확한 예측을 위해 최신 딥러닝 기술을 사용하였으며, 이 웹사이트는 교육 및 연구 목적으로 사용됩니다.</p>
-        <a class="btn btn-secondary mt-3" href="{% url 'index' %}">홈으로 돌아가기</a>
+        <p>이 웹사이트는 교육 및 연구 목적으로 사용됩니다.</p>
+
+        <div class="text-center">
+            <h2 class="mt-5">Confusion Matrix</h2>
+            <img src="{% static 'Confusion matrix.png' %}" alt="Confusion Matrix" class="img-fluid">
+            <p>Confusion Matrix는 SAINT 모델이 예측한 결과의 여러 지표를 나타냅니다. 0과 1의 값은 각각 암 발병 가능성 여부를 나타냅니다.</p>
+        </div>
+            <div class="text-center">
+            <h2 class="mt-5">ROC 커브</h2>
+            <img src="{% static 'ROC.png' %}" alt="ROC 커브" class="img-fluid">
+            <p>ROC 커브는 모델의 성능을 평가하는 지표입니다. 아래 그래프에서 True Positive Rate와 False Positive Rate 사이의 관계를 확인할 수 있으며, AUC 값이 높을수록 성능이 우수합니다.</p>
+        </div>
+        <div class="text-center">
+            <h2 class="mt-5">SHAP Value Bar 그래프</h2>
+            <img src="{% static 'SHAP_bar.png' %}" alt="SHAP Value Bar 그래프" class="img-fluid">
+            <p>SHAP Value Bar 그래프는 각 특성들이 학습 모델의 예측 결과에 미치는 영향을 시각화한 그래프입니다.</p>
+        </div>
     </div>
 {% endblock %}

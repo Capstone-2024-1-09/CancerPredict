@@ -1,6 +1,7 @@
 <!-- prediction/templates/base.html -->
 <!DOCTYPE html>
 <html lang="ko">
+{%  load static %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,6 +30,11 @@
                 </li>
                 <li class="nav-item {% if 'about' in request.path %}active{% endif %}">
                     <a class="nav-link" href="{% url 'about' %}">소개</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="https://github.com/Capstone-2024-1-09/CancerPredict" target="_blank">
+                        <img src="{% static 'github.png' %}" alt="Github" style="width: 30px; height: 30px;">
+                    </a>
                 </li>
             </ul>
         </div>

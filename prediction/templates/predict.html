@@ -35,6 +35,11 @@
                 <label for="weight">몸무게 (kg)</label>
                 <input type="number" step="0.1" class="form-control" name="weight" id="weight" placeholder="예: 70" required>
             </div>
+            <!-- BMI 표시 -->
+            <div class="form-group">
+                <label for="bmi_display">계산된 BMI</label>
+                <input type="text" class="form-control" id="bmi_display" readonly>
+            </div>
             <!-- BMI hidden 필드 -->
             <input type="hidden" name="BMI" id="bmi">
             <!-- 흡연 여부 선택 -->
@@ -81,12 +86,7 @@
                     <input class="form-check-input" type="radio" name="AlcoholIntake" id="alcohol_5_can" value="5" required>
                     <label class="form-check-label" for="alcohol_5_can">맥주 5캔 이상</label>
                 </div>
-                <small class="form-text text-muted">
-                    맥주 330ml 한 캔에 1 유닛의 알코올이 포함되어 있습니다.
-                </small>
             </div>
-            <!-- 알코올 유닛 hidden 필드 -->
-            <input type="hidden" name="AlcoholUnits" id="alcohol_unit">
             <!-- 암 발병 경험 선택 -->
             <div class="form-group">
                 <label>암 발병 경험</label>
@@ -106,17 +106,52 @@
 
     <!-- JavaScript -->
     <script>
-        function calculateAndSubmit() {
-            // 키(cm)를 가져옴
-            var height = parseFloat(document.getElementById("height").value) / 100;  // cm를 m로 변환
+        document.getElementById("height").addEventListener("input", updateBMI);
+        document.getElementById("weight").addEventListener("input", updateBMI);
+
+        function updateBMI() {
+            var height_cm = parseFloat(document.getElementById("height").value);
             var weight = parseFloat(document.getElementById("weight").value);
 
+            if (isNaN(height_cm) || isNaN(weight) || height_cm <= 0 || weight <= 0) {
+                document.getElementById("bmi_display").value = "";
+                return;
+            }
+
+            var height_m = height_cm / 100;
+            var bmi = weight / (height_m * height_m);
+            document.getElementById("bmi_display").value = bmi.toFixed(2);
+        }
+        function calculateAndSubmit() {
+            // 키(cm)를 가져옴
+            var height_cm = parseFloat(document.getElementById("height").value);
+            var weight = parseFloat(document.getElementById("weight").value);
+
+            if (isNaN(height_cm) || isNaN(weight) || height_cm <= 0 || weight <= 0) {
+                alert("키와 몸무게를 올바르게 입력해주세요.");
+                return;
+            }
+
+            var height_m = height_cm / 100;  // cm를 m로 변환
+
+            // BMI 계산
+            var bmi = weight / (height_m * height_m);
+            // BMI 값을 사용자에게 표시
+            document.getElementById("bmi_display").value = bmi.toFixed(2);
+            // 계산된 BMI를 hidden input에 저장
+            document.getElementById("bmi").value = bmi.toFixed(2);
+
             // 음주량을 선택한 값 가져오기
-            var alcoholOption = document.querySelector('input[name="AlcoholIntake"]:checked').value;
+            var alcoholOption = document.querySelector('input[name="AlcoholIntake"]:checked');
+            if (!alcoholOption) {
+                alert("일주일 간 음주량을 선택해주세요.");
+                return;
+            }
+            var alcoholValue = alcoholOption.value;
 
             // 알코올 유닛을 선택에 따라 계산 (맥주 330ml = 1유닛)
             var alcoholUnit = 0;
-            switch (alcoholOption) {
+            switch (alcoholValue) {
                 case '0':
                     alcoholUnit = 0;  // 음주 안 함
                     break;
@@ -139,19 +174,11 @@
                     alcoholUnit = 0;
             }
 
-            // 알코올 유닛을 hidden input에 저장
-            document.getElementById("alcohol_unit").value = alcoholUnit;
+            // 'AlcoholIntake' 필드에 실제 유닛 값을 설정
+            alcoholOption.value = alcoholUnit;
 
-            if (height > 0 && weight > 0) {
-                // BMI 계산
-                var bmi = weight / (height * height);
-                // 계산된 BMI를 hidden input에 저장
-                document.getElementById("bmi").value = bmi.toFixed(2);
-                // 폼을 제출
-                document.getElementById("predict-form").submit();
-            } else {
-                alert("키와 몸무게를 올바르게 입력해주세요.");
-            }
+            // 폼을 제출
+            document.getElementById("predict-form").submit();
         }
     </script>
 {% endblock %}
