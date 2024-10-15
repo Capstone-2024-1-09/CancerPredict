@@ -28,7 +28,7 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['esctabularpredict.xyz']
 
-CSRF_TRUSTED_ORIGINS = ['https://esctabularpredcit.xyz']
+CSRF_TRUSTED_ORIGINS = ['https://esctabularpredict.xyz']
 
 CSRF_COOKIE_SECURE= True
 
