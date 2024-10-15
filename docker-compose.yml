@@ -2,7 +2,7 @@ services:
   web:
     build: .
     container_name: cancer-prediction-web
-    command: gunicorn Capstone.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120
+    command: gunicorn Capstone.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 180
     volumes:
       - .:/app
       - static_volume:/app/static
@@ -27,13 +27,14 @@ services:
     networks:
       - app-network
 
-  certbot:
-    image: certbot/certbot
-    container_name: certbot
-    volumes:
-      - certs:/etc/letsencrypt
-      - certbot-www:/var/www/certbot
-    command: certonly --webroot --webroot-path=/var/www/certbot --email luca0328@pusan.ac.kr -d esctabularpredict.xyz --agree-tos --non-interactive --force-renewal
+# https 인증서 발급
+#  certbot:
+#    image: certbot/certbot
+#    container_name: certbot
+#    volumes:
+#      - certs:/etc/letsencrypt
+#      - certbot-www:/var/www/certbot
+#    command: certonly --webroot --webroot-path=/var/www/certbot --email luca0328@pusan.ac.kr -d esctabularpredict.xyz --agree-tos --non-interactive --force-renewal
 
 volumes:
   static_volume:
